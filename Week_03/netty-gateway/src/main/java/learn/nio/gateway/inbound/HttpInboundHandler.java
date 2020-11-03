@@ -32,7 +32,7 @@ public class HttpInboundHandler extends ChannelInboundHandlerAdapter {
     
     public HttpInboundHandler(List<String> proxyServers) {
         this.proxyServers = proxyServers;
-        filter = new AddRequestHeaderFilter(new AddRequestHeaderFilter.NameValueConfig("LEARN-NIO", "1"));
+        filter = new AddRequestHeaderFilter(new AddRequestHeaderFilter.NameValueConfig("nio", "ykthree"));
         router = new FullRandomEndpointRouter();
         handler = new NettyHttpClientOutboundHandler(router.route(proxyServers));
 //         handler = new HttpClientOutboundHandler(router.route(proxyServers));

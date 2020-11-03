@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpUtil;
 import learn.nio.gateway.outbound.HttpOutBoundHandler;
 import okhttp3.OkHttpClient;
@@ -59,11 +60,10 @@ public class OkHttpOutboundHandler implements HttpOutBoundHandler {
      * @param url         后端服务url
      */
     private void fetchGet(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, final String url) {
-        Request request = new Request.Builder()
-                .url(url)
-                .build();
+        Request.Builder builder = new Request.Builder().url(url);
+        fullRequest.headers().forEach(header -> builder.header(header.getKey(), header.getValue()));
         FullHttpResponse response = null;
-        try (Response endpointResponse = client.newCall(request).execute()) {
+        try (Response endpointResponse = client.newCall(builder.build()).execute()) {
             ResponseBody body = endpointResponse.body();
             if (body != null) {
                 response = new DefaultFullHttpResponse(HTTP_1_1, OK, Unpooled.wrappedBuffer(body.bytes()));
@@ -81,12 +81,10 @@ public class OkHttpOutboundHandler implements HttpOutBoundHandler {
             response = new DefaultFullHttpResponse(HTTP_1_1, NO_CONTENT);
             exceptionCaught(ctx, e);
         } finally {
-            if (fullRequest != null) {
-                if (!HttpUtil.isKeepAlive(fullRequest)) {
-                    ctx.write(response).addListener(ChannelFutureListener.CLOSE);
-                } else {
-                    ctx.write(response);
-                }
+            if (!HttpUtil.isKeepAlive(fullRequest)) {
+                ctx.write(response).addListener(ChannelFutureListener.CLOSE);
+            } else {
+                ctx.write(response);
             }
             ctx.flush();
         }

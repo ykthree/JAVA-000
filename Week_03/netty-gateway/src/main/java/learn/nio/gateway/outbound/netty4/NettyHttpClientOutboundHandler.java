@@ -23,8 +23,6 @@ public class NettyHttpClientOutboundHandler implements HttpOutBoundHandler {
 
     private static final Logger log = LoggerFactory.getLogger(NettyHttpClientOutboundHandler.class);
 
-    private static final String LEARN_NIO_HEADER = "LEARN-NIO";
-
     private final NettyHttpClient client;
 
     private final String backendUrl;
@@ -36,9 +34,6 @@ public class NettyHttpClientOutboundHandler implements HttpOutBoundHandler {
 
     @Override
     public void handle(FullHttpRequest fullRequest, ChannelHandlerContext ctx) {
-        HttpHeaders headers = fullRequest.headers();
-        String learnNioHeader = headers.get(LEARN_NIO_HEADER);
-        log.info("Header:[{}={}]", LEARN_NIO_HEADER, learnNioHeader);
         final String url = this.backendUrl + fullRequest.uri();
         fetchGet(fullRequest, ctx, url);
     }
@@ -51,13 +46,14 @@ public class NettyHttpClientOutboundHandler implements HttpOutBoundHandler {
      * @param url         后端服务url
      */
     private void fetchGet(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx, final String url) {
-        client.execute(url, new SimpleChannelInboundHandler<FullHttpResponse>() {
+        HttpGet.Builder builder = new HttpGet.Builder().uri(url);
+        fullRequest.headers().forEach(header -> builder.header(header.getKey(), header.getValue()));
+        client.execute(builder.build(), new SimpleChannelInboundHandler<FullHttpResponse>() {
             @Override
             protected void channelRead0(ChannelHandlerContext channelHandlerContext, final FullHttpResponse msg) throws Exception {
                 handleResponse(fullRequest, ctx, msg);
             }
         });
-
     }
 
     private void handleResponse(final FullHttpRequest fullRequest, final ChannelHandlerContext ctx,
