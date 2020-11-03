@@ -9,7 +9,7 @@
 - Week_03周六(10/31)
   - 作业1：
      - 作业题目：实现过滤器。
-     - 作业位置：learn.nio.gateway.filter.AddRequestHeaderFilter（增加了HTTP头——"LEARN-NIO=1"）
+     - 作业位置：learn.nio.gateway.filter.AddRequestHeaderFilter（增加了HTTP头——"nio=ykthree"）
   - 作业2：
      - 作业题目：实现路由。
      - 作业位置：learn.nio.gateway.router.FullRandomEndpointRouter（随机选取服务）
