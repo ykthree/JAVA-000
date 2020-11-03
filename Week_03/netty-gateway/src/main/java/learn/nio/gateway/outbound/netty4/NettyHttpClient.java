@@ -19,6 +19,7 @@ import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpClientCodec;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpHeaderValues;
+import io.netty.handler.codec.http.HttpHeaders;
 import io.netty.handler.codec.http.HttpMethod;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpVersion;
@@ -27,25 +28,27 @@ import sun.nio.ch.Net;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 基于Netty的HttpClient
  */
 public class NettyHttpClient {
 
-    public void execute(String url, SimpleChannelInboundHandler<FullHttpResponse> handler) {
+    public void execute(HttpRequest request, SimpleChannelInboundHandler<FullHttpResponse> handler) {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {
-            URI uri = new URI(url);
+            URI uri = request.uri();
             String host = uri.getHost();
             int port = uri.getPort();
-
             // 构建HTTP请求
-            FullHttpRequest request = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
-            request.headers().set(HttpHeaderNames.HOST, uri.getHost());
-            request.headers().set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE);
-            request.headers().set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
-
+            FullHttpRequest fullHttpRequest = new DefaultFullHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, uri.getRawPath());
+            HttpHeaders headers = fullHttpRequest.headers();
+            headers.set(HttpHeaderNames.HOST, host)
+                    .set(HttpHeaderNames.CONNECTION, HttpHeaderValues.CLOSE)
+                    .set(HttpHeaderNames.ACCEPT_ENCODING, HttpHeaderValues.GZIP);
+            request.headers().forEach(httpHeader -> headers.set(httpHeader.getKey(), httpHeader.getValue()));
             Bootstrap bootstrap = new Bootstrap()
                     .group(workerGroup)
                     .channel(NioSocketChannel.class)
@@ -65,7 +68,7 @@ public class NettyHttpClient {
             channelFuture.channel().writeAndFlush(request);
             // Wait for the server to close the connection.
             channelFuture.channel().closeFuture().sync();
-        } catch (URISyntaxException | InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
             // Shut down executor threads to exit.
