@@ -2,7 +2,7 @@
 
 - Week_05周四(11/12)
   - 作业 2（必做）：写代码实现Spring Bean的装配。
-    - 作业位置：
+    - 作业位置：spring-bean
     - 代码片段：
     
       Student类
@@ -103,7 +103,6 @@
 
         @Test
         public void testLoadBeanByAnnotation() {
-            // 方式三：使用 @Component/@Service/@Controller/@Repository 注解配置 bean。
             assertNotNull(this.studentComponent);
             assertEquals(0, this.studentComponent.getId());
             assertEquals(null, this.studentComponent.getName());
@@ -136,7 +135,6 @@
 
         @Test
         public void testLoadBeanByBeanAnnotation() {
-            // 方式二：使用 @Bean 将方法的返回值作为 bean。
             assertNotNull(this.studentBean);
             assertEquals(101, this.studentBean.getId());
             assertEquals("ykthree1", this.studentBean.getName());
