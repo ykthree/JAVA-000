@@ -38,7 +38,7 @@ public class LearnSpringBootAutoConfiguration {
 
     @Bean
     @ConditionalOnClass(Student.class)
-    @ConditionalOnMissingBean(Student.class)
+    // @ConditionalOnMissingBean(Student.class)
     @ConditionalOnProperty(prefix = "school.klass", name = "student.enabled", havingValue = "true", matchIfMissing = true)
     public Student student() {
         return new Student(100, "ykthree");
