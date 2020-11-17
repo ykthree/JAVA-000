@@ -298,142 +298,141 @@
       }
       ```
 
-    - 作业 6（必做）：研究一下 JDBC 接口和数据库连接池，掌握它们的设计和用法。
+  - 作业 6（必做）：研究一下 JDBC 接口和数据库连接池，掌握它们的设计和用法。
       
-      - 作业位置：learn-spring-data-jdbc
-      - 代码片段：
-        1. 使用 JDBC 原生接口，实现数据库的增删改查操作（learn.spring.data.jdbc.JdbcDemo）。
-        ```java
-        public Foo selectById(int id) {
-          Foo foo = null;
-          // 查询语句
-          String selectSql = "SELECT ID, NAME FROM FOO WHERE ID = ?";
+    - 作业位置：learn-spring-data-jdbc
+    - 代码片段：
+      1. 使用 JDBC 原生接口，实现数据库的增删改查操作（learn.spring.data.jdbc.JdbcDemo）。
+      ```java
+      public Foo selectById(int id) {
+        Foo foo = null;
+        // 查询语句
+        String selectSql = "SELECT ID, NAME FROM FOO WHERE ID = ?";
+        try (
+                Connection connection = DriverManager.getConnection(url, username, password);
+                PreparedStatement prepareStatement = connection.prepareStatement(selectSql);
+        ) {
+            prepareStatement.setInt(1, id);
+            try (ResultSet resultSet = prepareStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    foo = new Foo();
+                    foo.setId(resultSet.getInt(1));
+                    foo.setName(resultSet.getString(2));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return foo;
+      }
+
+      public void deleteById(int id) {
+          // 删除语句
+          String deleteSql = "DELETE FROM FOO WHERE ID = ?";
           try (
                   Connection connection = DriverManager.getConnection(url, username, password);
-                  PreparedStatement prepareStatement = connection.prepareStatement(selectSql);
+                  PreparedStatement prepareStatement = connection.prepareStatement(deleteSql);
           ) {
               prepareStatement.setInt(1, id);
-              try (ResultSet resultSet = prepareStatement.executeQuery()) {
-                  while (resultSet.next()) {
-                      foo = new Foo();
-                      foo.setId(resultSet.getInt(1));
-                      foo.setName(resultSet.getString(2));
+              prepareStatement.executeUpdate();
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+      }
+
+      public void insert(Foo foo) {
+          if (foo == null) {
+              return;
+          }
+          // 新增语句
+          String insertSql = "INSERT INTO FOO(ID, NAME) VALUES(?, ?)";
+          try (
+                  Connection connection = DriverManager.getConnection(url, username, password);
+                  PreparedStatement prepareStatement = connection.prepareStatement(insertSql);
+          ) {
+              prepareStatement.setInt(1, foo.getId());
+              prepareStatement.setString(2, foo.getName());
+              prepareStatement.executeUpdate();
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+      }
+
+      public void update(Foo foo) {
+          if (foo == null) {
+              return;
+          }
+          // 更新语句
+          String updateSql = "UPDATE FOO SET NAME = ? WHERE ID = ?";
+          try (
+                  Connection connection = DriverManager.getConnection(url, username, password);
+                  PreparedStatement prepareStatement = connection.prepareStatement(updateSql);
+          ) {
+              prepareStatement.setString(1, foo.getName());
+              prepareStatement.setInt(2, foo.getId());
+              prepareStatement.executeUpdate();
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+      }
+      ```
+      2. 使用事务，PrepareStatement 方式，批处理方式，改进上述操作（learn.spring.data.jdbc.JdbcDemo）。
+      ```java
+      public void batchInsert(List<Foo> fooList) {
+          if (fooList == null || fooList.isEmpty()) {
+              return;
+          }
+          // 新增语句
+          String insertSql = "INSERT INTO FOO(ID, NAME) VALUES(?, ?)";
+          try (
+                  Connection connection = DriverManager.getConnection(url, username, password);
+                  PreparedStatement prepareStatement = connection.prepareStatement(insertSql);
+          ) {
+              // 关闭自动提交
+              connection.setAutoCommit(false);
+              for (Foo foo : fooList) {
+                  prepareStatement.setInt(1, foo.getId());
+                  prepareStatement.setString(2, foo.getName());
+                  prepareStatement.addBatch();
+              }
+              prepareStatement.executeBatch();
+              connection.commit();
+          } catch (SQLException e) {
+              e.printStackTrace();
+          }
+      }
+
+      public void batchInsertWithTransaction(List<Foo> fooList) {
+          if (fooList == null || fooList.isEmpty()) {
+              return;
+          }
+          // 新增语句
+          String insertSql = "INSERT INTO FOO(ID, NAME) VALUES(?, ?)";
+          try (
+                  Connection connection = DriverManager.getConnection(url, username, password);
+                  PreparedStatement prepareStatement = connection.prepareStatement(insertSql);
+          ) {
+              // 关闭自动提交
+              connection.setAutoCommit(false);
+              try {
+                  for (Foo foo : fooList) {
+                      prepareStatement.setInt(1, foo.getId());
+                      prepareStatement.setString(2, foo.getName());
+                      prepareStatement.addBatch();
                   }
+                  prepareStatement.executeBatch();
+                  connection.commit();
+              } catch (SQLException e) {
+                  log.error("数据新增错误", e);
+                  connection.rollback();
               }
           } catch (SQLException e) {
               e.printStackTrace();
           }
-          return foo;
-        }
+      }
+      ```
+      1. 配置 Hikari 连接池，改进上述操作（learn.spring.data.jdbc.HikariJdbcDemo）。
 
-        public void deleteById(int id) {
-            // 删除语句
-            String deleteSql = "DELETE FROM FOO WHERE ID = ?";
-            try (
-                    Connection connection = DriverManager.getConnection(url, username, password);
-                    PreparedStatement prepareStatement = connection.prepareStatement(deleteSql);
-            ) {
-                prepareStatement.setInt(1, id);
-                prepareStatement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void insert(Foo foo) {
-            if (foo == null) {
-                return;
-            }
-            // 新增语句
-            String insertSql = "INSERT INTO FOO(ID, NAME) VALUES(?, ?)";
-            try (
-                    Connection connection = DriverManager.getConnection(url, username, password);
-                    PreparedStatement prepareStatement = connection.prepareStatement(insertSql);
-            ) {
-                prepareStatement.setInt(1, foo.getId());
-                prepareStatement.setString(2, foo.getName());
-                prepareStatement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void update(Foo foo) {
-            if (foo == null) {
-                return;
-            }
-            // 更新语句
-            String updateSql = "UPDATE FOO SET NAME = ? WHERE ID = ?";
-            try (
-                    Connection connection = DriverManager.getConnection(url, username, password);
-                    PreparedStatement prepareStatement = connection.prepareStatement(updateSql);
-            ) {
-                prepareStatement.setString(1, foo.getName());
-                prepareStatement.setInt(2, foo.getId());
-                prepareStatement.executeUpdate();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        ```
-        2. 使用事务，PrepareStatement 方式，批处理方式，改进上述操作（learn.spring.data.jdbc.JdbcDemo）。
-        ```java
-        public void batchInsert(List<Foo> fooList) {
-            if (fooList == null || fooList.isEmpty()) {
-                return;
-            }
-            // 新增语句
-            String insertSql = "INSERT INTO FOO(ID, NAME) VALUES(?, ?)";
-            try (
-                    Connection connection = DriverManager.getConnection(url, username, password);
-                    PreparedStatement prepareStatement = connection.prepareStatement(insertSql);
-            ) {
-                // 关闭自动提交
-                connection.setAutoCommit(false);
-                for (Foo foo : fooList) {
-                    prepareStatement.setInt(1, foo.getId());
-                    prepareStatement.setString(2, foo.getName());
-                    prepareStatement.addBatch();
-                }
-                prepareStatement.executeBatch();
-                connection.commit();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-
-        public void batchInsertWithTransaction(List<Foo> fooList) {
-            if (fooList == null || fooList.isEmpty()) {
-                return;
-            }
-            // 新增语句
-            String insertSql = "INSERT INTO FOO(ID, NAME) VALUES(?, ?)";
-            try (
-                    Connection connection = DriverManager.getConnection(url, username, password);
-                    PreparedStatement prepareStatement = connection.prepareStatement(insertSql);
-            ) {
-                // 关闭自动提交
-                connection.setAutoCommit(false);
-                try {
-                    for (Foo foo : fooList) {
-                        prepareStatement.setInt(1, foo.getId());
-                        prepareStatement.setString(2, foo.getName());
-                        prepareStatement.addBatch();
-                    }
-                    prepareStatement.executeBatch();
-                    connection.commit();
-                } catch (SQLException e) {
-                    log.error("数据新增错误", e);
-                    connection.rollback();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
-        ```
-        3. 配置 Hikari 连接池，改进上述操作（learn.spring.data.jdbc.HikariJdbcDemo）。
-   
-        连接改为从HikariCP连接池中获取，其余代码和上述一样。需要注意的是，使用从 HikariCP 获取的连接{@link HikariProxyConnection}，调用其{@link ProxyConnection#close()}方法不会直接关闭
-        连接，而是将连接清理并重新放回连接池。
+         连接改为从HikariCP连接池中获取，其余代码和上述一样。需要注意的是，使用从 HikariCP 获取的连接{@link HikariProxyConnection}，调用其{@link ProxyConnection#close()}方法不会直接关闭连接，而是将连接清理并重新放回连接池。
 
 # 学习笔记
