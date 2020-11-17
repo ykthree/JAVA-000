@@ -102,7 +102,7 @@
         public void testLoadBeanByAnnotation() {
             assertNotNull(this.studentComponent);
             assertEquals(0, this.studentComponent.getId());
-            assertEquals(null, this.studentComponent.getName());
+            assertNull(this.studentComponent.getName());
         }
 
       }   
