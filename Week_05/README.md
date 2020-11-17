@@ -432,7 +432,8 @@
         }
         ```
         3. 配置 Hikari 连接池，改进上述操作（learn.spring.data.jdbc.HikariJdbcDemo）。
-        连接改为从HikariCP连接池中获取，其余代码和上述一样。需要注意的是，使用从 HikariCP 获取的连接{@link HikariProxyConnection}，调用其{@link ProxyConnection#close()} 不会直接关闭
-        连接，而是将其清理并重新放回连接池。
+   
+        连接改为从HikariCP连接池中获取，其余代码和上述一样。需要注意的是，使用从 HikariCP 获取的连接{@link HikariProxyConnection}，调用其{@link ProxyConnection#close()}方法不会直接关闭
+        连接，而是将连接清理并重新放回连接池。
 
 # 学习笔记
