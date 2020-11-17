@@ -63,7 +63,7 @@ public class SpringBeanLoadTests {
         // 方式三：使用 @Component/@Service/@Controller/@Repository 注解配置 bean。
         assertNotNull(this.studentComponent);
         assertEquals(0, this.studentComponent.getId());
-        assertEquals(null, this.studentComponent.getName());
+        assertNull(this.studentComponent.getName());
     }
 
     @Test
