@@ -1,0 +1,6 @@
+school:
+  enabled: true
+  klass:
+    enabled: true
+    student:
+      enabled: true

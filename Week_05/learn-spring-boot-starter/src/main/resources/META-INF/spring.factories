@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+learn.spring.boot.starter.config.LearnSpringBootAutoConfiguration
