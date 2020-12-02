@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`t_order_master` (
   `pay_money` DECIMAL(8,2) NOT NULL,
   `pay_method` TINYINT(1) NULL,
   `address` VARCHAR(200) NOT NULL COMMENT '收货地址',
-  `receice_user` VARCHAR(10) NOT NULL COMMENT '收获人',
+  `receive_user` VARCHAR(10) NOT NULL COMMENT '收获人',
   `ship_sn` VARCHAR(45) CHARACTER SET 'ascii' NULL COMMENT '快递单号',
   `ship_company_name` VARCHAR(10) NULL COMMENT '快递公司名称',
   PRIMARY KEY (`id`))
