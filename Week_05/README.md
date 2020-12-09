@@ -182,7 +182,7 @@
       learn.spring.bean.StudentAutoConfiguration
       ```
 
-- Week_05周四(11/14)
+- Week_05周六(11/14)
   - 作业 3（必做）：给前面课程提供的Student/Klass/School实现自动配置和Starter。
     - 作业位置：learn-spring-boot-starter
     - 代码片段：
