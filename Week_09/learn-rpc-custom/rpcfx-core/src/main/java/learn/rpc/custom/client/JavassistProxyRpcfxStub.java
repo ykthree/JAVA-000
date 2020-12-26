@@ -2,25 +2,22 @@ package learn.rpc.custom.client;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
+import javassist.util.proxy.MethodFilter;
+import javassist.util.proxy.MethodHandler;
+import javassist.util.proxy.Proxy;
+import javassist.util.proxy.ProxyFactory;
 import learn.rpc.custom.api.RpcfxRequest;
 import learn.rpc.custom.api.RpcfxResponse;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 
 /**
- * 客户端代理存根，基于 Cglib 动态代理实现
+ * 客户端代理存根，基于 Javassist 动态代理实现
  */
-public final class CglibRpcfxStub extends AbstractRpcfxStub {
+public final class JavassistProxyRpcfxStub extends AbstractRpcfxStub {
 
     static {
         ParserConfig.getGlobalInstance().addAccept("learn.rpc");
@@ -28,14 +25,17 @@ public final class CglibRpcfxStub extends AbstractRpcfxStub {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T create(final Class<T> serviceClass, final String url) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(serviceClass);
-        enhancer.setCallback(new AccessServerInterceptor(serviceClass, url));
-        return (T) enhancer.create();
+    public <T> T create(final Class<T> serviceClass, final String url) throws Exception {
+        final ProxyFactory proxyFactory = new ProxyFactory();
+        proxyFactory.setInterfaces(new Class[]{serviceClass});
+        proxyFactory.setFilter(method -> !method.getName().equals("finalize"));
+        T service = (T) proxyFactory.createClass().newInstance();
+        Proxy proxy = (Proxy) service;
+        proxy.setHandler(new AccessServerInterceptor(serviceClass, url));
+        return service;
     }
 
-    class AccessServerInterceptor implements MethodInterceptor {
+    class AccessServerInterceptor implements MethodHandler {
 
         private final Class<?> serviceClass;
 
@@ -47,12 +47,11 @@ public final class CglibRpcfxStub extends AbstractRpcfxStub {
         }
 
         @Override
-        public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+        public Object invoke(Object o, Method method, Method proceed, Object[] args) throws Throwable {
             RpcfxRequest request = new RpcfxRequest();
             request.setServiceClass(this.serviceClass.getName());
             request.setMethod(method.getName());
             request.setParams(args);
-
             RpcfxResponse response = doPost(request, url);
             if (!response.isStatus()) {
                 throw response.getException();

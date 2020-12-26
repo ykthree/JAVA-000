@@ -4,32 +4,67 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>learn.rpc</groupId>
-        <artifactId>learn-rpc-custom</artifactId>
+        <artifactId>learn-rpc-simple</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>rpcfx-core</artifactId>
     <name>${project.artifactId}</name>
 
+    <properties>
+        <fastjson.version>1.2.75</fastjson.version>
+        <cglib.version>3.3.0</cglib.version>
+        <javassist.version>3.27.0-GA</javassist.version>
+        <bytebuddy.version>1.10.19</bytebuddy.version>
+        <netty.version>4.1.45.Final</netty.version>
+        <okhttp.version>4.9.0</okhttp.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
-            <version>1.2.75</version>
+            <version>${fastjson.version}</version>
         </dependency>
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>
-            <version>3.3.0</version>
+            <version>${cglib.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>${javassist.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>${bytebuddy.version}</version>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
-            <version>4.1.45.Final</version>
+            <version>${netty.version}</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
-            <version>4.9.0</version>
+            <version>${okhttp.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>1.2.3</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>

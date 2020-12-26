@@ -4,13 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import learn.rpc.custom.api.RpcfxRequest;
 import learn.rpc.custom.api.RpcfxResponse;
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
@@ -18,9 +14,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
- * 客户端代理存根，基于 Cglib 动态代理实现
+ * 客户端代理存根，基于 JDK 动态代理实现
  */
-public final class CglibRpcfxStub extends AbstractRpcfxStub {
+public final class JdkRpcfxStub extends AbstractRpcfxStub {
 
     static {
         ParserConfig.getGlobalInstance().addAccept("learn.rpc");
@@ -29,31 +25,28 @@ public final class CglibRpcfxStub extends AbstractRpcfxStub {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T create(final Class<T> serviceClass, final String url) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(serviceClass);
-        enhancer.setCallback(new AccessServerInterceptor(serviceClass, url));
-        return (T) enhancer.create();
+        return (T) Proxy.newProxyInstance(JdkRpcfxStub.class.getClassLoader(), new Class[]{serviceClass},
+                new AccessSeverInterceptor(serviceClass, url));
     }
 
-    class AccessServerInterceptor implements MethodInterceptor {
+    class AccessSeverInterceptor implements InvocationHandler {
 
         private final Class<?> serviceClass;
 
         private final String url;
 
-        public <T> AccessServerInterceptor(Class<T> serviceClass, String url) {
+        public <T> AccessSeverInterceptor(Class<T> serviceClass, String url) {
             this.serviceClass = serviceClass;
             this.url = url;
         }
 
         @Override
-        public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+        public Object invoke(Object proxy, Method method, Object[] params) throws Throwable {
             RpcfxRequest request = new RpcfxRequest();
             request.setServiceClass(this.serviceClass.getName());
             request.setMethod(method.getName());
-            request.setParams(args);
-
-            RpcfxResponse response = doPost(request, url);
+            request.setParams(params);
+            RpcfxResponse response = doPost(request, this.url);
             if (!response.isStatus()) {
                 throw response.getException();
             }
