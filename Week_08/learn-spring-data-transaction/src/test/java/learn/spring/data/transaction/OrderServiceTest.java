@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -44,7 +45,7 @@ public class OrderServiceTest {
         Order order1 = buildOrder(1);
         Order order2 = buildOrder(2);
         try {
-            orderService.insertThenRollback(order1, order2);
+            orderService.insertThenRollback(Arrays.asList(order1, order2));
         } catch (RollbackException e) {
             log.error("failed", e);
         }

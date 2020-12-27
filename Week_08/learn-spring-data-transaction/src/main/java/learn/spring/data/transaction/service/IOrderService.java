@@ -22,9 +22,9 @@ public interface IOrderService {
     TransactionType insert(final Order order);
 
     /**
-     * 测试事务
+     * 测试分布式事务
      */
-    void insertThenRollback(final Order order1, final Order order2) throws RollbackException;
+    void insertThenRollback(List<Order> orders) throws RollbackException;
 
     /**
      * 查询订单

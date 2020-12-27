@@ -64,7 +64,7 @@
               ds-mydb-1:
                 type: com.zaxxer.hikari.HikariDataSource
                 driver-class-name: com.mysql.jdbc.Driver
-                jdbc-url: jdbc:mysql://127.0.0.1:3326/mydb_1?useSSL=false&useUnicode=true&characterEncoding=UTF-8
+                jdbc-url: jdbc:mysql://127.0.0.1:3316/mydb_1?useSSL=false&useUnicode=true&characterEncoding=UTF-8
                 username: root
                 password:
             sharding:
@@ -288,9 +288,8 @@
     @Override
     @Transactional(rollbackFor = RollbackException.class)
     @ShardingTransactionType(TransactionType.XA)
-    public void insertThenRollback(final Order order1, final Order order2) throws RollbackException {
-        mapper.insert(order1);
-        mapper.insert(order2);
+    public void insertThenRollback(final List<Order> orders) throws RollbackException {
+        mapper.batchInsert(orders);
         throw new RollbackException("Mock access failed");
     }
     ```
@@ -311,7 +310,7 @@
         Order order1 = buildOrder(1);
         Order order2 = buildOrder(2);
         try {
-            orderService.insertThenRollback(order1, order2);
+            orderService.insertThenRollback(Arrays.asList(order1, order2));
         } catch (RollbackException e) {
             log.error("failed", e);
         }
@@ -319,25 +318,25 @@
         assertEquals(0, integer);
     }
     ```
-    XA事务日志：xa_tx2.log
+    XA事务日志：/logs/xa_tx4.log
     ```json
     {
-      "id": "192.168.229.1.tm160752529201200001",
-      "wasCommitted": false,
-      "participants": [
-          {
-              "uri": "192.168.229.1.tm1",
-              "state": "TERMINATED",
-              "expires": 1607525593107,
-              "resourceName": "resource-2-ds-mydb-1"
-          },
-          {
-              "uri": "192.168.229.1.tm2",
-              "state": "TERMINATED",
-              "expires": 1607525593107,
-              "resourceName": "resource-1-ds-mydb-0"
-          }
-      ]
+        "id": "192.168.229.1.tm160905546398900001",
+        "wasCommitted": false,
+        "participants": [
+            {
+                "uri": "192.168.229.1.tm1",
+                "state": "TERMINATED",
+                "expires": 1609055764889,
+                "resourceName": "resource-2-ds-mydb-1"
+            },
+            {
+                "uri": "192.168.229.1.tm2",
+                "state": "TERMINATED",
+                "expires": 1609055764889,
+                "resourceName": "resource-1-ds-mydb-0"
+            }
+        ]
     }
     ```
 

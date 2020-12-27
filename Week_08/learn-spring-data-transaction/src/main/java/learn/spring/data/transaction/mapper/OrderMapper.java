@@ -3,6 +3,7 @@ package learn.spring.data.transaction.mapper;
 import learn.spring.data.transaction.domain.entity.Order;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -24,6 +25,25 @@ import java.util.List;
 @Slf4j
 public class OrderMapper {
 
+    private final String insertSql = "INSERT INTO mydb.t_order_master\n" +
+            "(id,\n" +
+            "order_sn,\n" +
+            "customer_id,\n" +
+            "order_status,\n" +
+            "create_time,\n" +
+            "ship_time,\n" +
+            "pay_time,\n" +
+            "receive_time,\n" +
+            "discount_money,\n" +
+            "ship_money,\n" +
+            "pay_money,\n" +
+            "pay_method,\n" +
+            "address,\n" +
+            "receive_user,\n" +
+            "ship_sn,\n" +
+            "ship_company_name)\n" +
+            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -34,25 +54,26 @@ public class OrderMapper {
      * @return int
      */
     public int insert(Order order) {
-        String insertSql = "INSERT INTO mydb.t_order_master\n" +
-                "(id,\n" +
-                "order_sn,\n" +
-                "customer_id,\n" +
-                "order_status,\n" +
-                "create_time,\n" +
-                "ship_time,\n" +
-                "pay_time,\n" +
-                "receive_time,\n" +
-                "discount_money,\n" +
-                "ship_money,\n" +
-                "pay_money,\n" +
-                "pay_method,\n" +
-                "address,\n" +
-                "receive_user,\n" +
-                "ship_sn,\n" +
-                "ship_company_name)\n" +
-                "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         return jdbcTemplate.update(insertSql, ps -> setOrderValues(ps, order));
+    }
+
+    /**
+     * 批量新增订单
+     *
+     * @param orders 订单列表
+     * @return int[]
+     */
+    public int[] batchInsert(final List<Order> orders) {
+        return jdbcTemplate.batchUpdate(insertSql, new BatchPreparedStatementSetter() {
+            @Override
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                setOrderValues(ps, orders.get(i));
+            }
+            @Override
+            public int getBatchSize() {
+                return orders.size();
+            }
+        });
     }
 
     /**
@@ -73,7 +94,7 @@ public class OrderMapper {
      */
     public List<Order> listAllOrders() {
         String selectSql = "select * from mydb.t_order_master";
-        return jdbcTemplate.query(selectSql,  this::getOrderValues);
+        return jdbcTemplate.query(selectSql, this::getOrderValues);
     }
 
     /**

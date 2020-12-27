@@ -36,9 +36,8 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional(rollbackFor = RollbackException.class)
     @ShardingTransactionType(TransactionType.XA)
-    public void insertThenRollback(final Order order1, final Order order2) throws RollbackException {
-        mapper.insert(order1);
-        mapper.insert(order2);
+    public void insertThenRollback(final List<Order> orders) throws RollbackException {
+        mapper.batchInsert(orders);
         throw new RollbackException("Mock access failed");
     }
 

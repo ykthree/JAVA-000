@@ -15,7 +15,7 @@ spring:
       ds-mydb-1:
         type: com.zaxxer.hikari.HikariDataSource
         driver-class-name: com.mysql.jdbc.Driver
-        jdbc-url: jdbc:mysql://127.0.0.1:3326/mydb_1?useSSL=false&useUnicode=true&characterEncoding=UTF-8
+        jdbc-url: jdbc:mysql://127.0.0.1:3316/mydb_1?useSSL=false&useUnicode=true&characterEncoding=UTF-8
         username: root
         password:
     sharding:
