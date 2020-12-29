@@ -1,0 +1,12 @@
+server:
+  port: 8088
+  address: 0.0.0.0
+  servlet:
+    context-path: /
+
+logging:
+  level:
+    root: error
+    org.springframework.web: info
+    org.apache.ibatis: debug
+    learn.tcc.exchange: debug
