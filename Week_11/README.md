@@ -187,7 +187,7 @@
             }
 
             /**
-            * 计数器减=加一，并返回增加后的值
+            * 计数器加一，并返回增加后的值
             *
             * @return 增加后的值
             */
@@ -264,7 +264,7 @@
         }
 
         ```
-        使用 SupserBenchMarker 测试 
+        使用 SuperBenchMarker 测试 
         ```
         sb -u http://localhost:8080/redis/usage/counter/flash -c 10 -n 110
 

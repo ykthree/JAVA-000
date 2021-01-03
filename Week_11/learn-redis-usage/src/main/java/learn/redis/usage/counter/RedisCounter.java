@@ -40,7 +40,7 @@ public class RedisCounter {
     }
 
     /**
-     * 计数器减=加一，并返回增加后的值
+     * 计数器加一，并返回增加后的值
      *
      * @return 增加后的值
      */
