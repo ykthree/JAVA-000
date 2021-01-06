@@ -1,0 +1,16 @@
+version: "3"
+services:
+  redis-master:
+    image: redis:6.0.9
+    ports: 
+      - 6379:6379
+    networks:
+      - net-redis-replica
+
+  redis-slave:
+    image: redis:6.0.9
+    command: redis-server --replicaof redis-master 6379
+    networks:
+      - net-redis-replica
+networks:
+  net-redis-replica:

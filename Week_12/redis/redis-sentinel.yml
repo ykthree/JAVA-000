@@ -1,0 +1,52 @@
+version: "3"
+services:
+  redis-master:
+    image: redis:6.0.9
+    ports: 
+      - 6379:6379
+    networks:
+      net-redis-sentinel:
+        ipv4_address: 192.168.3.24
+
+  redis-slave:
+    image: redis:6.0.9
+    command: redis-server --replicaof redis-master 6379
+    networks:
+      - net-redis-sentinel
+  
+  redis-sentinel_1:
+    image: redis:6.0.9
+    command: redis-sentinel /redis/sentinel.conf
+    ports:
+      - "26379:26379"
+    volumes:
+      - ./conf/sentinel01:/redis/
+    networks:
+      - net-redis-sentinel
+
+  redis-sentinel_2:
+    image: redis:6.0.9
+    command: redis-sentinel /redis/sentinel.conf
+    ports:
+      - "26380:26379"
+    volumes:
+      - ./conf/sentinel02:/redis/
+    networks:
+      - net-redis-sentinel
+
+  redis-sentinel_3:
+    image: redis:6.0.9
+    command: redis-sentinel /redis/sentinel.conf
+    ports:
+      - "26381:26379"
+    volumes:
+      - ./conf/sentinel03:/redis/
+    networks:
+      - net-redis-sentinel
+
+networks:
+  net-redis-sentinel:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "192.168.3.0/24"
