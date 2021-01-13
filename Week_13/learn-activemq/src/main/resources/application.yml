@@ -1,0 +1,9 @@
+# 去掉以下配置会使用内嵌的 ActiveMQ(Spring Boot 2.4.0)
+spring:
+  activemq:
+    broker-url: 'tcp://localhost:61616'
+
+logging:
+  level:
+    root: info
+
